@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 const dotenv = require("dotenv");
 const job = require("./cron/cron");
 
@@ -7,9 +9,17 @@ job.start();
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({ origin: '*' }));
 dotenv.config();
 app.use(express.json());
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: '*', // Chấp nhận tất cả các nguồn gốc (domain)
+    methods: ['GET', 'POST'], // Các phương thức được chấp nhận
+  }
+});
 
 app.get("", (req, res) => {
   res.json({
@@ -17,8 +27,30 @@ app.get("", (req, res) => {
   })
 })
 
+io.on('connection', (socket) => {
+  console.log('New client connected');
+
+  socket.on('offer', (data) => {
+    console.log('Offer received:', data);
+    socket.broadcast.emit('offer', data);
+  });
+
+  socket.on('answer', (data) => {
+    console.log('Answer received:', data);
+    socket.broadcast.emit('answer', data);
+  });
+
+  socket.on('candidate', (data) => {
+    console.log('Candidate received:', data);
+    socket.broadcast.emit('candidate', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
 const PORT = process.env.PORT || 8800;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
