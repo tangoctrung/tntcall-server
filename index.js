@@ -9,14 +9,14 @@ job.start();
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: '*' }));
+app.use(cors());
 dotenv.config();
 app.use(express.json());
 
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Chấp nhận tất cả các nguồn gốc (domain)
+    origin: 'https://tntcall.vercel.app', // Chấp nhận tất cả các nguồn gốc (domain)
     methods: ['GET', 'POST'], // Các phương thức được chấp nhận
   }
 });
@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 8800;
+const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
