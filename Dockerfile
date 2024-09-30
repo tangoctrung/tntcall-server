@@ -1,19 +1,15 @@
-# Dựa trên Node.js official image
-FROM node:20-alpine
+FROM node:18-alpine
 
-# Tạo thư mục làm việc
 WORKDIR /app
 
-# Copy package*.json và package-lock.json để cài đặt dependencies
 COPY package*.json ./
 
-# Cài đặt dependencies
-RUN yarn install
+RUN npm install -g npm@10.8.2
 
-# Copy toàn bộ source code vào container
+RUN npm install
+
 COPY . .
 
 EXPOSE 8000
 
-# Chạy ứng dụng Node.js
 CMD ["node", "index.js"]

@@ -3,8 +3,6 @@ const cors = require('cors');
 const dotenv = require("dotenv");
 const job = require("./cron/cron");
 
-job.start();
-
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -25,6 +23,8 @@ const io = require("socket.io")(httpServer, {
     origin: "*",
   },
 });
+
+job.start();
 
 app.get("", (req, res) => {
   res.json({
