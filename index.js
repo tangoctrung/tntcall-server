@@ -16,8 +16,8 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'https://tntcall.vercel.app', // Chấp nhận tất cả các nguồn gốc (domain)
-    methods: ['GET', 'POST'], // Các phương thức được chấp nhận
+    origin: ['https://tntcall.vercel.app', 'http://localhost:3000'], // Chấp nhận tất cả các nguồn gốc (domain)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Các phương thức được chấp nhận
   }
 });
 
