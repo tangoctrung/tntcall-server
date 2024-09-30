@@ -1,7 +1,5 @@
 const express = require("express");
 const cors = require('cors');
-const http = require('http');
-const socketIo = require('socket.io');
 const dotenv = require("dotenv");
 const job = require("./cron/cron");
 
@@ -13,10 +11,18 @@ app.use(cors());
 dotenv.config();
 app.use(express.json());
 
-const server = http.createServer(app);
-const io = socketIo(server, {
+// const server = http.createServer(app);
+// const io = socketIo(server, {
+//   cors: {
+//     origin: 'https://tntcall.vercel.app', // Chấp nhận tất cả các nguồn gốc (domain)
+//   },
+// });
+
+// Socket
+const httpServer = require('http').createServer(app);
+const io = require("socket.io")(httpServer, {
   cors: {
-    origin: 'https://tntcall.vercel.app', // Chấp nhận tất cả các nguồn gốc (domain)
+    origin: "*",
   },
 });
 
@@ -50,6 +56,6 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 8000;
-server.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
