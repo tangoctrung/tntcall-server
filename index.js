@@ -32,26 +32,62 @@ app.get("", (req, res) => {
   })
 })
 
+// one call
+// io.on('connection', (socket) => {
+//   console.log('New client connected');
+
+//   socket.on('offer', (data) => {
+//     console.log('Offer received:', data);
+//     socket.broadcast.emit('offer', data);
+//   });
+
+//   socket.on('answer', (data) => {
+//     console.log('Answer received:', data);
+//     socket.broadcast.emit('answer', data);
+//   });
+
+//   socket.on('candidate', (data) => {
+//     console.log('Candidate received:', data);
+//     socket.broadcast.emit('candidate', data);
+//   });
+
+//   socket.on('disconnect', () => {
+//     console.log('Client disconnected');
+//   });
+// });
+
+let users = {};
+
 io.on('connection', (socket) => {
-  console.log('New client connected');
+  console.log('New user connected:', socket.id);
 
-  socket.on('offer', (data) => {
-    console.log('Offer received:', data);
-    socket.broadcast.emit('offer', data);
-  });
+  // Khi người dùng tham gia phòng
+  socket.on('join-room', (roomId, userId) => {
+    socket.join(roomId);
+    users[socket.id] = userId;
 
-  socket.on('answer', (data) => {
-    console.log('Answer received:', data);
-    socket.broadcast.emit('answer', data);
-  });
+    socket.broadcast.to(roomId).emit('user-connected', userId);
 
-  socket.on('candidate', (data) => {
-    console.log('Candidate received:', data);
-    socket.broadcast.emit('candidate', data);
-  });
+    // Khi nhận được offer, chuyển nó đến peer khác trong phòng
+    socket.on('offer', (offer, receiverId) => {
+      socket.to(receiverId).emit('offer', offer, userId);
+    });
 
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
+    // Khi nhận được answer, chuyển nó đến peer đã gửi offer
+    socket.on('answer', (answer, senderId) => {
+      socket.to(senderId).emit('answer', answer, userId);
+    });
+
+    // Khi nhận được ICE candidate, chuyển nó đến peer tương ứng
+    socket.on('candidate', (candidate, receiverId) => {
+      socket.to(receiverId).emit('candidate', candidate, userId);
+    });
+
+    // Khi người dùng rời khỏi phòng
+    socket.on('disconnect', () => {
+      socket.broadcast.to(roomId).emit('user-disconnected', userId);
+      delete users[socket.id];
+    });
   });
 });
 
